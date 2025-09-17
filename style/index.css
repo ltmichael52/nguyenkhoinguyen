@@ -1,4 +1,9 @@
 body {
+  Background-color: #FFD93D;
+  font-size: 18px;
+  font-family: Arial,sans-serif;
+  text-align: center ;
+  color: #333;
   /* Background-color: #FFD93D, word: size 18px, family Arial, sans-serif, align center , color #333*/
 }
 
@@ -6,23 +11,37 @@ body {
   padding: 20px;
   margin: 30px auto;
   width: 70%;
+  background-color: #fff;
+  border-radius: 10px;
   /* background color #fff, border-radius: 10px */
 }
 
  
 /* h1 color:#FF6B6B ,word: 36px, bold  */
-
+h1 {
+  color:#FF6B6B;
+  font-size: 36px; 
+  font-weight: bold;
+}
 /*  h2 color: #4D96FF,28px  */
-
+h2 {
+  color: #4D96FF;
+  font-size: 28px;
+}
 img {
   margin: 15px 0;
   width: 200px;
+  height: auto;
   /* width: 200px height auto, borderradius 10px */
+  border-radius: 10px;
+
 }
+
 
 ul, ol {
   margin: 15px auto;
   /* width: fit-content,align left */
+  text-align: left;
 }
 
 a {
