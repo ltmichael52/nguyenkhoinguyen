@@ -1,0 +1,1 @@
+print(My name is Nguyen, and i in grade 6)
