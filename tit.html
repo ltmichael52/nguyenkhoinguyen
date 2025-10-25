@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>tít</title>
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#0f1724; --accent:#7cf0ff; --accent2:#ff66d9; --muted:#94a3b8; --glass: rgba(255,255,255,0.03);
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071020 0%, #071426 100%);font-family:Inter,system-ui,Arial;color:var(--accent);}
+  .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .card{width:100%;max-width:980px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:18px;border:1px solid rgba(124,240,255,0.06);box-shadow:0 12px 36px rgba(2,6,23,0.7);display:grid;grid-template-columns:420px 1fr;gap:18px;}
+  @media (max-width:920px){ .card{grid-template-columns:1fr; } }
+
+  /* Left column: timer + auth */
+  .left{padding:12px;display:flex;flex-direction:column;gap:12px;}
+  .ring{position:relative;width:320px;height:320px;display:grid;place-items:center;margin:0 auto;}
+  svg{filter: drop-shadow(0 6px 24px rgba(124,240,255,0.06));}
+  .time{font-size:40px;font-weight:700;color:var(--accent);}
+  .sub{color:var(--muted);font-size:13px;}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:6px;}
+  button{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);color:var(--accent);padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:700;}
+  button.ghost{color:var(--muted);border-color:rgba(255,255,255,0.02);}
+  button.warn{color:var(--accent2);border-color:rgba(255,102,217,0.08);}
+
+  /* Right column: auth + todo */
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);min-height:320px;display:flex;flex-direction:column;gap:12px;}
+  label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px;}
+  .inputs{display:flex;gap:8px;align-items:center;}
+  input[type="text"], input[type="password"], input[type="number"]{width:100%;padding:9px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:var(--glass);color:var(--accent);font-weight:600;}
+  .small{font-size:13px;color:var(--muted);}
+  .auth-row{display:flex;gap:8px;}
+  .todo-list{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto;padding-right:6px;}
+  .task{background:rgba(255,255,255,0.015);padding:10px;border-radius:8px;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,0.02);}
+  .task.completed{opacity:0.5;text-decoration:line-through;}
+  .task .title{flex:1;color:var(--accent);font-weight:600;}
+  .task .meta{font-size:12px;color:var(--muted);}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" role="application" aria-label="Neon Timer with Auth and ToDo">
+    <div class="left">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-weight:800;font-size:18px;color:var(--accent)">Neon Timer</div>
+          <div class="small">Countdown & presets • per-user data</div>
+        </div>
+        <div id="userBadge" class="small" style="text-align:right;color:var(--muted)">Not logged in</div>
+      </div>
+
+      <div class="ring" aria-hidden="true">
+        <svg viewBox="0 0 120 120" width="320" height="320" id="svgRing">
+          <defs>
+            <linearGradient id="g" x1="0" x2="1"><stop offset="0%" stop-color="#7cf0ff"/><stop offset="100%" stop-color="#ff66d9"/></linearGradient>
+          </defs>
+          <circle cx="60" cy="60" r="52" stroke="rgba(255,255,255,0.03)" stroke-width="12" fill="none" />
+          <circle id="progress" cx="60" cy="60" r="52" stroke="url(#g)" stroke-width="12" stroke-linecap="round" fill="none"
+                  stroke-dasharray="326.7256" stroke-dashoffset="326.7256" transform="rotate(-90 60 60)"></circle>
+        </svg>
+        <div style="position:absolute;text-align:center;">
+          <div class="time" id="displayTime">00:00</div>
+          <div class="sub" id="statusText">Ready</div>
+        </div>
+      </div>
+
+      <div class="controls" role="group" aria-label="Timer controls">
+        <button id="startBtn">Start</button>
+        <button id="pauseBtn" class="ghost">Pause</button>
+        <button id="resetBtn" class="ghost">Reset</button>
+        <button id="ringTest" class="warn">Test Sound</button>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:6px;">
+        <input id="minutes" type="number" min="0" max="999" value="0" style="width:80px;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--accent);font-weight:700;" />
+        <div style="display:flex;align-items:center;color:var(--accent);font-weight:700">:</div>
+        <input id="seconds" type="number" min="0" max="59" value="30" style="width:80px;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--accent);font-weight:700;" />
+      </div>
+
+      <div style="display:flex;justify-content:center;gap:8px;margin-top:6px;">
+        <button data-min="0" data-sec="30" class="ghost presetBtn">30s</button>
+        <button data-min="1" data-sec="0" class="ghost presetBtn">1m</button>
+        <button data-min="5" data-sec="0" class="ghost presetBtn">5m</button>
+        <button data-min="10" data-sec="0" class="ghost presetBtn">10m</button>
+      </div>
+
+      <div style="text-align:center" class="small">Space = Start/Pause • R = Reset</div>
+    </div>
+
+    <div class="panel">
+      <div class="topbar">
+        <div style="font-weight:800;color:var(--accent)">Account & To-Do</div>
+        <div style="display:flex;gap:8px;">
+          <button id="logoutBtn" class="ghost" style="display:none">Logout</button>
+        </div>
+      </div>
+
+      <!-- AUTH -->
+      <div id="authArea">
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="username" placeholder="username" style="padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--accent);font-weight:700;" />
+          <input type="password" id="password" placeholder="password" style="padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--accent);font-weight:700;" />
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button id="loginBtn">Login</button>
+          <button id="registerBtn" class="ghost">Register</button>
+        </div>
+        <div id="authMsg" class="small" style="color:var(--muted);margin-top:6px"></div>
+      </div>
+
+      <!-- TODO -->
+      <div style="margin-top:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-weight:700">Work To Do</div>
+          <div class="small" id="taskCount">0 tasks</div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <input type="text" id="newTask" placeholder="Write a new task..." />
+          <button id="addTaskBtn" class="ghost">Add</button>
+        </div>
+
+        <div class="todo-list" id="todoList" aria-live="polite" style="margin-top:8px">
+          <!-- tasks will appear here -->
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:8px;align-items:center;">
+          <button id="clearCompleted" class="ghost">Clear completed</button>
+          <button id="exportBtn" class="ghost">Export</button>
+          <button id="importBtn" class="ghost">Import</button>
+          <input type="file" id="importFile" accept="application/json" style="display:none" />
+        </div>
+        <div class="small" style="margin-top:6px;color:var(--muted)">Notes: Data saved in your browser per account. This is a client-side demo (no server).</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------------------
+  Client-side account system + ToDo + Timer
+  - Uses localStorage to persist users: users = { username: {pwHash, tasks:[...], timerDefaults:{min,sec}} }
+  - Passwords hashed with SHA-256 (Web Crypto) before storage.
+  - This is client-side only: not secure for real production auth.
+--------------------------- */
+
+// Utilities: simple SHA-256 hex
+async function sha256hex(str){
+  const enc = new TextEncoder();
+  const data = enc.encode(str);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// Storage helpers
+const STORAGE_KEY = 'neon_timer_users_v1';
+function loadAllUsers(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e){ return {}; } }
+function saveAllUsers(obj){ localStorage.setItem(STORAGE_KEY, JSON.stringify(obj)); }
+
+// UI references
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const loginBtn = document.getElementById('loginBtn');
+const registerBtn = document.getElementById('registerBtn');
+const authMsg = document.getElementById('authMsg');
+const userBadge = document.getElementById('userBadge');
+const logoutBtn = document.getElementById('logoutBtn');
+
+const newTaskInput = document.getElementById('newTask');
+const addTaskBtn = document.getElementById('addTaskBtn');
+const todoListEl = document.getElementById('todoList');
+const taskCountEl = document.getElementById('taskCount');
+const clearCompletedBtn = document.getElementById('clearCompleted');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+const importFile = document.getElementById('importFile');
+
+let currentUser = null; // username string
+let users = loadAllUsers();
+
+// Helpers for tasks
+function defaultUserObj(){
+  return { pwHash: '', tasks: [], timerDefaults: {min:0, sec:30} };
+}
+
+function saveCurrentUserData(){
+  if (!currentUser) return;
+  users[currentUser] = users[currentUser] || defaultUserObj();
+  saveAllUsers(users);
+}
+
+// Render tasks
+function renderTasks(){
+  todoListEl.innerHTML = '';
+  if (!currentUser){ todoListEl.innerHTML = '<div class="small" style="color:var(--muted)">Log in to see your tasks.</div>'; taskCountEl.textContent = '0 tasks'; return; }
+  const tasks = users[currentUser].tasks || [];
+  taskCountEl.textContent = `${tasks.length} task${tasks.length===1?'':'s'}`;
+  tasks.forEach((t, idx) => {
+    const item = document.createElement('div');
+    item.className = 'task' + (t.done ? ' completed' : '');
+    const chk = document.createElement('input'); chk.type='checkbox'; chk.checked = !!t.done;
+    chk.addEventListener('change', () => {
+      users[currentUser].tasks[idx].done = chk.checked;
+      saveAllUsers(users);
+      renderTasks();
+    });
+    const title = document.createElement('div'); title.className='title'; title.textContent = t.text;
+    const meta = document.createElement('div'); meta.className='meta'; meta.textContent = t.createdAt ? new Date(t.createdAt).toLocaleString() : '';
+    const del = document.createElement('button'); del.textContent='Delete'; del.className='ghost';
+    del.addEventListener('click', () => {
+      users[currentUser].tasks.splice(idx,1);
+      saveAllUsers(users); renderTasks();
+    });
+    item.appendChild(chk); item.appendChild(title); item.appendChild(meta); item.appendChild(del);
+    todoListEl.appendChild(item);
+  });
+}
+
+// Auth actions
+async function registerUser(){
+  const u = usernameInput.value.trim();
+  const p = passwordInput.value;
+  if (!u || !p){ authMsg.textContent='Enter username and password.'; return; }
+  if (users[u]){ authMsg.textContent='Username already exists.'; return; }
+  const hash = await sha256hex(p);
+  users[u] = defaultUserObj();
+  users[u].pwHash = hash;
+  saveAllUsers(users);
+  authMsg.textContent = 'Registered. You can now login.';
+  usernameInput.value=''; passwordInput.value='';
+}
+
+async function loginUser(){
+  const u = usernameInput.value.trim();
+  const p = passwordInput.value;
+  if (!u || !p){ authMsg.textContent='Enter username and password.'; return; }
+  const hash = await sha256hex(p);
+  if (!users[u] || users[u].pwHash !== hash){ authMsg.textContent='Invalid username or password.'; return; }
+  currentUser = u;
+  authMsg.textContent = '';
+  usernameInput.value=''; passwordInput.value='';
+  onLogin();
+}
+
+function logoutUser(){
+  currentUser = null; onLogout();
+}
+
+function onLogin(){
+  userBadge.textContent = `Logged in: ${currentUser}`;
+  logoutBtn.style.display = 'inline-block';
+  document.getElementById('authArea').style.display = 'none';
+  renderTasks();
+  // load timer defaults for user
+  const td = users[currentUser].timerDefaults || {min:0, sec:30};
+  minutesInput.value = td.min; secondsInput.value = td.sec;
+  setFromInputs();
+}
+
+function onLogout(){
+  userBadge.textContent = 'Not logged in';
+  logoutBtn.style.display = 'none';
+  document.getElementById('authArea').style.display = 'block';
+  renderTasks();
+}
+
+// Task actions
+function addTask(){
+  if (!currentUser){ authMsg.textContent = 'Please login to add tasks.'; return; }
+  const text = newTaskInput.value.trim();
+  if (!text) return;
+  const t = { text, done:false, createdAt: Date.now() };
+  users[currentUser].tasks = users[currentUser].tasks || [];
+  users[currentUser].tasks.unshift(t);
+  saveAllUsers(users);
+  newTaskInput.value = ''; renderTasks();
+}
+
+// Export / Import
+exportBtn.addEventListener('click', () => {
+  if (!currentUser){ authMsg.textContent='Login to export.'; return; }
+  const data = { username: currentUser, data: users[currentUser] };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `${currentUser}_neon_data.json`; a.click();
+  URL.revokeObjectURL(url);
+});
+
+importBtn.addEventListener('click', () => importFile.click());
+importFile.addEventListener('change', (ev) => {
+  const f = ev.target.files[0]; if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!parsed.username || !parsed.data){ authMsg.textContent='Invalid import file.'; return; }
+      users[parsed.username] = parsed.data;
+      saveAllUsers(users);
+      authMsg.textContent = `Imported data for ${parsed.username}.`;
+      if (currentUser === parsed.username){ renderTasks(); }
+    } catch(e){ authMsg.textContent='Failed to import JSON.'; }
+  };
+  reader.readAsText(f);
+});
+
+// Wire auth buttons
+registerBtn.addEventListener('click', () => registerUser());
+loginBtn.addEventListener('click', () => loginUser());
+logoutBtn.addEventListener('click', () => { logoutUser(); authMsg.textContent='Logged out.'; });
+
+// Tasks UI
+addTaskBtn.addEventListener('click', addTask);
+newTaskInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') addTask(); });
+clearCompletedBtn.addEventListener('click', () => {
+  if (!currentUser) return;
+  users[currentUser].tasks = (users[currentUser].tasks || []).filter(t => !t.done);
+  saveAllUsers(users); renderTasks();
+});
+
+// Initialize auth UI
+if (Object.keys(users).length === 0){
+  // create a sample user for demo (optional)
+  // do nothing; let user register
+}
+renderTasks();
+
+/* ---------------------------
+  Timer code (from previous file) — minor integration to save defaults to user
+--------------------------- */
+const minutesInput = document.getElementById('minutes');
+const secondsInput = document.getElementById('seconds');
+const startBtn = document.getElementById('startBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetBtn = document.getElementById('resetBtn');
+const displayTime = document.getElementById('displayTime');
+const statusText = document.getElementById('statusText');
+const presetBtns = document.querySelectorAll('.presetBtn');
+const progress = document.getElementById('progress');
+const vibrateChk = null; // removed from UI for compactness
+const ringTest = document.getElementById('ringTest');
+
+let totalSeconds = 30, remaining = 30, timerId = null, running = false, lastTick = null;
+const R = 52; const CIRC = 2 * Math.PI * R;
+progress.style.strokeDasharray = CIRC;
+progress.style.strokeDashoffset = CIRC;
+
+function formatTime(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const m = Math.floor(sec / 60); const s = sec % 60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+function updateDisplay(){
+  displayTime.textContent = formatTime(remaining);
+  const pct = totalSeconds === 0 ? 0 : (remaining / totalSeconds);
+  progress.style.strokeDashoffset = CIRC * pct;
+  statusText.textContent = running ? 'Running' : (remaining === 0 ? 'Finished' : 'Ready');
+}
+function setFromInputs(){
+  const m = Math.max(0, Math.floor(Number(minutesInput.value) || 0));
+  let s = Math.floor(Number(secondsInput.value) || 0);
+  if (s < 0) s = 0; if (s > 59) s = 59;
+  totalSeconds = m * 60 + s; if (totalSeconds <= 0) totalSeconds = 1;
+  remaining = totalSeconds;
+  updateDisplay();
+  // save user's timer default if logged in
+  if (currentUser){
+    users[currentUser].timerDefaults = {min:m, sec:s};
+    saveAllUsers(users);
+  }
+}
+function tick(){
+  if (!running) return;
+  const now = performance.now();
+  const dt = (now - lastTick) / 1000;
+  lastTick = now;
+  remaining -= dt;
+  if (remaining <= 0){
+    remaining = 0; stopTimer(); onFinish();
+  }
+  updateDisplay();
+  timerId = requestAnimationFrame(tick);
+}
+function startTimer(){ if (running) return; if (remaining <= 0) remaining = totalSeconds; running = true; lastTick = performance.now(); timerId = requestAnimationFrame(tick); updateDisplay(); }
+function pauseTimer(){ if (!running) return; running = false; if (timerId) cancelAnimationFrame(timerId); timerId = null; updateDisplay(); }
+function stopTimer(){ running = false; if (timerId) cancelAnimationFrame(timerId); timerId = null; updateDisplay(); }
+function resetTimer(){ stopTimer(); remaining = totalSeconds; updateDisplay(); }
+function onFinish(){ playBeep(); /* optionally vibrate */ if (currentUser){ /* could log finish to user's data */ } }
+let audioCtx = null;
+function playBeep(){ try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const t = audioCtx; const o = t.createOscillator(); const g = t.createGain(); o.type='sine'; o.frequency.value=880; g.gain.value=0.001; o.connect(g); g.connect(t.destination); o.start(); g.gain.linearRampToValueAtTime(0.15, t.currentTime + 0.01); g.gain.linearRampToValueAtTime(0.0001, t.currentTime + 0.8); o.stop(t.currentTime + 0.85); } catch(e){ try{ new Audio().play(); }catch(_){}} }
+
+startBtn.addEventListener('click', () => { setFromInputs(); startTimer(); });
+pauseBtn.addEventListener('click', () => { if (running) pauseTimer(); else startTimer(); });
+resetBtn.addEventListener('click', () => { setFromInputs(); resetTimer(); });
+ringTest.addEventListener('click', playBeep);
+
+presetBtns.forEach(b => b.addEventListener('click', () => {
+  minutesInput.value = b.dataset.min; secondsInput.value = b.dataset.sec; setFromInputs();
+}));
+
+minutesInput.addEventListener('change', setFromInputs);
+secondsInput.addEventListener('change', setFromInputs);
+document.addEventListener('keydown', (e)=>{ if (e.code==='Space'){ e.preventDefault(); if (running) pauseTimer(); else startTimer(); } if (e.key.toLowerCase()==='r'){ resetTimer(); } });
+
+// Save on unload
+window.addEventListener('beforeunload', () => saveAllUsers(users));
+
+/* Extra: save current users variable periodically in case of changes from UI */
+setInterval(()=>saveAllUsers(users), 2000);
+
+/* Expose some global functions for convenience (dev) */
+window._neon_users = users;
+window._neon_currentUser = () => currentUser;
+
+</script>
+</body>
+</html>
