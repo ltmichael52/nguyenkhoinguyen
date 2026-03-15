@@ -1,177 +1,335 @@
-<div id="piano-app" style="width: 100%; max-width: 950px; background: #1a1a1a; padding: 20px; border-radius: 15px; font-family: 'Segoe UI', sans-serif; color: white; user-select: none; margin: auto; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-    
-    <div style="display: flex; justify-content: space-between; align-items: center; background: #222; padding: 12px 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 15px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="color: #f1c40f; font-weight: bold; font-size: 16px;">🎹 KeyPiano</span>
-            <span style="font-size: 12px; color: #777; font-weight: bold;">By NKN</span>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KeyPiano By NKN</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #piano-app {
+            width: 950px;
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 20px;
+            color: white;
+            user-select: none;
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            border: 1px solid #333;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #222;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #333;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-main { color: #f1c40f; font-weight: bold; font-size: 18px; }
+        .author { font-size: 13px; color: #888; font-weight: bold; letter-spacing: 1px; }
+
+        .controls { display: flex; gap: 10px; }
+        .btn {
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: #444; border-color: #666; }
+        .btn:active { transform: scale(0.95); }
+
+        /* Menu Hướng dẫn */
+        #dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 30px;
+            top: 90px;
+            background: #222;
+            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            z-index: 100;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+        }
+
+        .guide-box {
+            background: #0044cc;
+            color: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            word-spacing: 5px;
+            border: 1px solid #0055ff;
+        }
+
+        /* Keyboard Visual */
+        .keyboard-pc {
+            background: #252525;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .kb-row { display: flex; gap: 6px; }
+        .key-visual {
+            width: 36px;
+            height: 36px;
+            background: #eee;
+            color: #222;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 3px 0 #999;
+            font-size: 12px;
+            transition: 0.1s;
+        }
+        .key-visual.active {
+            background: #f1c40f !important;
+            transform: translateY(3px);
+            box-shadow: none !important;
+        }
+
+        /* Piano Keys */
+        #piano-container {
+            background: #000;
+            padding: 15px 0;
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        #piano-keys {
+            position: relative;
+            height: 200px;
+            width: 840px; /* 21 phím trắng * 40px */
+            margin: 0 auto;
+            display: flex;
+        }
+        .white-key {
+            width: 40px;
+            height: 100%;
+            background: linear-gradient(to bottom, #eee 0%, #fff 100%);
+            border: 1px solid #bbb;
+            border-radius: 0 0 6px 6px;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        .white-key:active, .white-key.p-active {
+            background: #ddd;
+            box-shadow: inset 0 0 10px #aaa;
+        }
+        .black-key {
+            width: 26px;
+            height: 120px;
+            background: linear-gradient(to bottom, #333 0%, #000 100%);
+            position: absolute;
+            z-index: 2;
+            border-radius: 0 0 4px 4px;
+            cursor: pointer;
+            border: 1px solid #222;
+        }
+        .black-key:active, .black-key.p-active {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+
+<div id="piano-app">
+    <div class="top-bar">
+        <div class="logo-area">
+            <span class="logo-main">🎹 KeyPiano</span>
+            <span class="author">By NKN</span>
         </div>
-        
-        <div style="display: flex; gap: 8px;">
-            <button class="top-btn" onclick="changeOctave(-1)">OC-</button>
-            <button class="top-btn" onclick="changeOctave(1)">OC+</button>
-            <button class="top-btn" id="rec-btn" style="color: #ff4757;" onclick="toggleRec()">● REC</button>
-            <button class="top-btn" onclick="playBack()">▶ PLAY</button>
-            <button class="top-btn" id="menu-btn">⋮</button>
+        <div class="controls">
+            <button class="btn" onclick="changeOctave(-1)">OC-</button>
+            <button class="btn" onclick="changeOctave(1)">OC+</button>
+            <button class="btn" id="rec-btn" style="color: #ff4757;" onclick="toggleRec()">● REC</button>
+            <button class="btn" onclick="playBack()">▶ PLAY</button>
+            <button class="btn" id="menu-btn">⋮</button>
         </div>
     </div>
 
-    <div id="dropdown-menu" style="display: none; position: absolute; right: 30px; top: 80px; background: #222; border: 1px solid #444; padding: 15px; border-radius: 8px; width: 280px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-        <p style="font-size: 11px; color: #888; margin-bottom: 8px; text-transform: uppercase;">Hướng dẫn Mr. Bean (Bản đầy đủ)</p>
-        <div style="background: #0044cc; color: #fff; padding: 12px; border-radius: 5px; text-align: center; line-height: 1.6; word-break: break-all;">
-            <b style="font-size: 13px; letter-spacing: 1px;">W W R T Y O O I Y T R W R T Y O O I</b>
+    <div id="dropdown-menu">
+        <p style="font-size: 11px; color: #888; margin-bottom: 10px; text-transform: uppercase;">Mr. Bean Full Guide</p>
+        <div class="guide-box" id="guide-text">
+            W W R T Y O O I<br>Y T R W R T Y O O
         </div>
-        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #333; text-align: center; font-size: 10px; color: #555;">
+        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #333; text-align: center; font-size: 10px; color: #555;">
             Bản quyền bởi NKN
         </div>
     </div>
 
-    <div style="background: #2d2d2d; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; align-items: center; border: 1px solid #333;">
-        <div class="kb-row">
-            <div class="key" id="k-1">1</div><div class="key" id="k-2">2</div><div class="key" id="k-3">3</div><div class="key" id="k-4">4</div><div class="key" id="k-5">5</div>
-            <div class="key" id="k-6">6</div><div class="key" id="k-7">7</div><div class="key" id="k-8">8</div><div class="key" id="k-9">9</div><div class="key" id="k-0">0</div>
-        </div>
-        <div class="kb-row" style="margin-left: 15px;">
-            <div class="key" id="k-q">Q</div><div class="key" id="k-w">W</div><div class="key" id="k-e">E</div><div class="key" id="k-r">R</div><div class="key" id="k-t">T</div>
-            <div class="key" id="k-y">Y</div><div class="key" id="k-u">U</div><div class="key" id="k-i">I</div><div class="key" id="k-o">O</div><div class="key" id="k-p">P</div>
-        </div>
-        <div class="kb-row" style="margin-left: 30px;">
-            <div class="key" id="k-a">A</div><div class="key" id="k-s">S</div><div class="key" id="k-d">D</div><div class="key" id="k-f">F</div><div class="key" id="k-g">G</div>
-            <div class="key" id="k-h">H</div><div class="key" id="k-j">J</div><div class="key" id="k-k">K</div><div class="key" id="k-l">L</div>
-        </div>
+    <div class="keyboard-pc">
+        <div class="kb-row" id="row-num"></div>
+        <div class="kb-row" id="row-q" style="margin-left: 15px;"></div>
+        <div class="kb-row" id="row-a" style="margin-left: 30px;"></div>
     </div>
 
-    <div id="piano-viewport" style="background: #000; padding: 10px 0; margin-top: 15px; border-radius: 0 0 10px 10px; overflow-x: auto;">
-        <div id="piano-keys" style="position: relative; height: 180px; width: 840px; margin: 0 auto; display: flex;"></div>
+    <div id="piano-container">
+        <div id="piano-keys"></div>
     </div>
 </div>
 
-<style>
-    .top-btn { background: #333; border: 1px solid #444; color: white; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold; }
-    .kb-row { display: flex; gap: 6px; }
-    .key { width: 34px; height: 34px; background: #eee; color: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 3px 0 #999; font-size: 11px; }
-    .key.active { background: #f1c40f !important; transform: translateY(3px); box-shadow: none !important; }
-    
-    .white-key { width: 40px; height: 100%; background: white; border: 1px solid #ccc; border-radius: 0 0 5px 5px; flex-shrink: 0; box-sizing: border-box; }
-    .black-key { width: 26px; height: 100px; background: #111; position: absolute; z-index: 2; border-radius: 0 0 3px 3px; cursor: pointer; border: 1px solid #444; }
-    .p-active { background: #ddd !important; }
-</style>
-
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // Compressor chống rè âm thanh
     const compressor = audioCtx.createDynamicsCompressor();
-    compressor.threshold.setValueAtTime(-20, audioCtx.currentTime);
-    compressor.ratio.setValueAtTime(12, audioCtx.currentTime);
     compressor.connect(audioCtx.destination);
 
     const pianoKeys = document.getElementById('piano-keys');
     const recBtn = document.getElementById('rec-btn');
     const menu = document.getElementById('dropdown-menu');
-
+    
     let currentOctave = 0;
     let isRecording = false;
     let recording = [];
     let startTime = 0;
 
-    document.getElementById('menu-btn').onclick = (e) => { e.stopPropagation(); menu.style.display = menu.style.display === 'none' ? 'block' : 'none'; };
-    window.onclick = () => menu.style.display = 'none';
+    // Cấu hình phím và nốt
+    const layouts = {
+        num: ['1','2','3','4','5','6','7','8','9','0'],
+        q: ['Q','W','E','R','T','Y','U','I','O','P'],
+        a: ['A','S','D','F','G','H','J','K','L']
+    };
 
-    // Map phím đầy đủ bao gồm số 1-10 (0)
-    const notesMap = [
-        {k:'1', f:130.81}, {k:'2', f:146.83}, {k:'3', f:164.81}, {k:'4', f:174.61}, {k:'5', f:196.00}, 
-        {k:'6', f:220.00}, {k:'7', f:246.94}, {k:'8', f:261.63}, {k:'9', f:293.66}, {k:'0', f:329.63},
-        {k:'Q', f:261.63}, {k:'W', f:293.66}, {k:'E', f:329.63}, {k:'R', f:349.23}, {k:'T', f:392.00}, 
-        {k:'Y', f:440.00}, {k:'U', f:493.88}, {k:'I', f:523.25}, {k:'O', f:587.33}, {k:'P', f:659.25}, 
-        {k:'A', f:698.46}, {k:'S', f:783.99}, {k:'D', f:880.00}, {k:'F', f:987.77}, {k:'G', f:1046.50}, 
-        {k:'H', f:1174.66}, {k:'J', f:1318.51}, {k:'K', f:1396.91}, {k:'L', f:1567.98}
-    ];
+    const notesMap = {
+        '1': 130.81, '2': 146.83, '3': 164.81, '4': 174.61, '5': 196.00, '6': 220.00, '7': 246.94, '8': 261.63, '9': 293.66, '0': 329.63,
+        'Q': 261.63, 'W': 293.66, 'E': 329.63, 'R': 349.23, 'T': 392.00, 'Y': 440.00, 'U': 493.88, 'I': 523.25, 'O': 587.33, 'P': 659.25,
+        'A': 698.46, 'S': 783.99, 'D': 880.00, 'F': 987.77, 'G': 1046.50, 'H': 1174.66, 'J': 1318.51, 'K': 1396.91, 'L': 1567.98
+    };
+
+    // Khởi tạo giao diện bàn phím PC
+    Object.keys(layouts).forEach(row => {
+        const container = document.getElementById('row-' + row);
+        layouts[row].forEach(k => {
+            const div = document.createElement('div');
+            div.className = 'key-visual';
+            div.id = 'k-' + k.toLowerCase();
+            div.innerText = k;
+            container.appendChild(div);
+        });
+    });
 
     function playNote(freq, k, isPlayback = false) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const f = freq * Math.pow(2, currentOctave);
-        
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        
+
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-        
         gain.gain.setValueAtTime(0, audioCtx.currentTime);
         gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
-        
+
         osc.connect(gain);
         gain.connect(compressor);
-        
         osc.start();
         osc.stop(audioCtx.currentTime + 1.2);
 
         if (isRecording && !isPlayback) {
             recording.push({f: freq, t: audioCtx.currentTime - startTime});
         }
-        
-        const keyEl = document.getElementById('k-' + k.toLowerCase());
-        if(keyEl) {
-            keyEl.classList.add('active');
-            setTimeout(() => keyEl.classList.remove('active'), 150);
+
+        const visual = document.getElementById('k-' + k.toLowerCase());
+        if(visual) {
+            visual.classList.add('active');
+            setTimeout(() => visual.classList.remove('active'), 150);
         }
     }
 
     function renderPiano() {
         pianoKeys.innerHTML = '';
-        let whiteKeyCount = 21;
-        let blackPattern = [true, true, false, true, true, true, false];
+        const whiteKeys = ['Q','W','E','R','T','Y','U','I','O','P','A','S','D','F','G','H','J','K','L','Z','X'];
+        const blackPattern = [true, true, false, true, true, true, false];
 
-        for (let i = 0; i < whiteKeyCount; i++) {
+        // Vẽ phím trắng
+        whiteKeys.forEach((k, i) => {
             const wk = document.createElement('div');
             wk.className = 'white-key';
-            // Lấy nốt từ danh sách notesMap bắt đầu từ Q (index 10)
-            const noteIdx = i + 10;
-            if(notesMap[noteIdx]) {
-                wk.onmousedown = () => playNote(notesMap[noteIdx].f, notesMap[noteIdx].k);
-            }
+            wk.onmousedown = () => {
+                const freq = notesMap[k] || 261.63 * Math.pow(1.05946, i);
+                playNote(freq, k);
+            };
             pianoKeys.appendChild(wk);
-        }
+        });
 
-        for (let i = 0; i < whiteKeyCount - 1; i++) {
+        // Vẽ phím đen (Vị trí chính xác tuyệt đối)
+        let leftPos = 0;
+        for (let i = 0; i < whiteKeys.length - 1; i++) {
             if (blackPattern[i % 7]) {
                 const bk = document.createElement('div');
                 bk.className = 'black-key';
                 bk.style.left = (40 * (i + 1) - 13) + "px";
                 bk.onmousedown = (e) => {
                     e.stopPropagation();
-                    const noteIdx = i + 10;
-                    playNote(notesMap[noteIdx].f * 1.05946, 'none');
+                    const baseFreq = notesMap[whiteKeys[i]] || 261.63;
+                    playNote(baseFreq * 1.05946, 'none');
                     bk.classList.add('p-active');
-                    setTimeout(() => bk.classList.remove('p-active'), 150);
+                    setTimeout(() => bk.classList.remove('p-active'), 100);
                 };
                 pianoKeys.appendChild(bk);
             }
         }
     }
 
+    // Sự kiện bàn phím
+    window.onkeydown = (e) => {
+        if(e.repeat) return;
+        const k = e.key.toUpperCase();
+        if(notesMap[k]) playNote(notesMap[k], k);
+    };
+
+    // Các chức năng phụ
     window.changeOctave = (v) => { currentOctave = Math.max(-1, Math.min(1, currentOctave + v)); };
-    
     window.toggleRec = () => {
         isRecording = !isRecording;
         recBtn.style.color = isRecording ? "yellow" : "#ff4757";
         if (isRecording) { recording = []; startTime = audioCtx.currentTime; }
     };
-
     window.playBack = () => {
-        if (recording.length === 0) return;
-        recording.forEach(note => {
-            setTimeout(() => playNote(note.f, 'none', true), note.t * 1000);
-        });
+        if (!recording.length) return;
+        recording.forEach(n => setTimeout(() => playNote(n.f, 'none', true), n.t * 1000));
     };
 
-    window.onkeydown = (e) => {
-        if(e.repeat) return;
-        const k = e.key.toUpperCase();
-        const note = notesMap.find(n => n.k === k);
-        if(note) playNote(note.f, note.k);
+    document.getElementById('menu-btn').onclick = (e) => {
+        e.stopPropagation();
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
     };
+    window.onclick = () => menu.style.display = 'none';
 
     renderPiano();
 </script>
+
+</body>
+</html>
