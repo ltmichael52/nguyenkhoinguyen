@@ -2,199 +2,41 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KeyPiano By NKN</title>
+    <title>KeyPiano By NKN - Full Keyboard</title>
     <style>
-        body {
-            background-color: #0d0d0d;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        #piano-app {
-            width: 950px;
-            background: #1a1a1a;
-            padding: 25px;
-            border-radius: 20px;
-            color: white;
-            user-select: none;
-            position: relative;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-            border: 1px solid #333;
-        }
-
-        /* Top Bar */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #222;
-            padding: 15px 25px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            border: 1px solid #333;
-        }
-
-        .logo-area { display: flex; align-items: center; gap: 12px; }
-        .logo-main { color: #f1c40f; font-weight: bold; font-size: 18px; }
-        .author { font-size: 13px; color: #888; font-weight: bold; letter-spacing: 1px; }
-
-        .controls { display: flex; gap: 10px; }
-        .btn {
-            background: #333;
-            border: 1px solid #444;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-        .btn:hover { background: #444; border-color: #666; }
-        .btn:active { transform: scale(0.95); }
-
-        /* Menu Hướng dẫn */
-        #dropdown-menu {
-            display: none;
-            position: absolute;
-            right: 30px;
-            top: 90px;
-            background: #222;
-            border: 1px solid #444;
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
-            z-index: 100;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.9);
-        }
-
-        .guide-box {
-            background: #0044cc;
-            color: #fff;
-            padding: 15px;
-            border-radius: 6px;
-            text-align: center;
-            font-family: monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            word-spacing: 5px;
-            border: 1px solid #0055ff;
-        }
-
-        /* Keyboard Visual */
-        .keyboard-pc {
-            background: #252525;
-            padding: 20px;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+        body { background: #0d0d0d; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        #piano-app { width: 920px; background: #1a1a1a; padding: 25px; border-radius: 20px; color: white; border: 1px solid #333; box-shadow: 0 30px 60px rgba(0,0,0,0.8); }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: #222; padding: 12px 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
+        .logo { color: #f1c40f; font-weight: bold; font-size: 18px; }
+        
+        /* Khu vực hiển thị bàn phím PC */
+        .keyboard-pc { background: #252525; padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 8px; align-items: center; margin-bottom: 20px; }
         .kb-row { display: flex; gap: 6px; }
-        .key-visual {
-            width: 36px;
-            height: 36px;
-            background: #eee;
-            color: #222;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 3px 0 #999;
-            font-size: 12px;
-            transition: 0.1s;
+        .key-visual { 
+            width: 38px; height: 38px; background: #333; color: #aaa; border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center; font-weight: bold; 
+            font-size: 12px; transition: all 0.05s; border: 1px solid #444; box-shadow: 0 3px 0 #111;
         }
-        .key-visual.active {
-            background: #f1c40f !important;
-            transform: translateY(3px);
-            box-shadow: none !important;
-        }
+        /* Hiệu ứng Highlight khi ấn phím */
+        .key-visual.active { background: #f1c40f !important; color: #000; transform: translateY(3px); box-shadow: none !important; border-color: #fff; }
 
-        /* Piano Keys */
-        #piano-container {
-            background: #000;
-            padding: 15px 0;
-            border-radius: 0 0 12px 12px;
-            overflow: hidden;
-            position: relative;
-        }
-        #piano-keys {
-            position: relative;
-            height: 200px;
-            width: 840px; /* 21 phím trắng * 40px */
-            margin: 0 auto;
-            display: flex;
-        }
-        .white-key {
-            width: 40px;
-            height: 100%;
-            background: linear-gradient(to bottom, #eee 0%, #fff 100%);
-            border: 1px solid #bbb;
-            border-radius: 0 0 6px 6px;
-            flex-shrink: 0;
-            box-sizing: border-box;
-            cursor: pointer;
-            transition: background 0.1s;
-        }
-        .white-key:active, .white-key.p-active {
-            background: #ddd;
-            box-shadow: inset 0 0 10px #aaa;
-        }
-        .black-key {
-            width: 26px;
-            height: 120px;
-            background: linear-gradient(to bottom, #333 0%, #000 100%);
-            position: absolute;
-            z-index: 2;
-            border-radius: 0 0 4px 4px;
-            cursor: pointer;
-            border: 1px solid #222;
-        }
-        .black-key:active, .black-key.p-active {
-            background: #444;
-        }
+        /* Đàn Piano */
+        #piano-container { background: #000; padding: 15px 0; border-radius: 12px; position: relative; }
+        #piano-keys { position: relative; height: 180px; width: 880px; margin: 0 auto; display: flex; }
+        .white-key { width: 40px; height: 100%; background: white; border: 1px solid #bbb; border-radius: 0 0 6px 6px; flex-shrink: 0; cursor: pointer; }
+        .white-key.p-active { background: #ddd; }
+        .black-key { width: 26px; height: 110px; background: #000; position: absolute; z-index: 2; border-radius: 0 0 4px 4px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="piano-app">
     <div class="top-bar">
-        <div class="logo-area">
-            <span class="logo-main">🎹 KeyPiano</span>
-            <span class="author">By NKN</span>
-        </div>
-        <div class="controls">
-            <button class="btn" onclick="changeOctave(-1)">OC-</button>
-            <button class="btn" onclick="changeOctave(1)">OC+</button>
-            <button class="btn" id="rec-btn" style="color: #ff4757;" onclick="toggleRec()">● REC</button>
-            <button class="btn" onclick="playBack()">▶ PLAY</button>
-            <button class="btn" id="menu-btn">⋮</button>
-        </div>
+        <div class="logo">🎹 NKN KeyPiano <span style="font-size: 11px; color: #666;">PRO</span></div>
+        <div style="font-size: 12px; color: #888;">By NKN</div>
     </div>
 
-    <div id="dropdown-menu">
-        <p style="font-size: 11px; color: #888; margin-bottom: 10px; text-transform: uppercase;">Mr. Bean Full Guide</p>
-        <div class="guide-box" id="guide-text">
-            W W R T Y O O I<br>Y T R W R T Y O O
-        </div>
-        <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #333; text-align: center; font-size: 10px; color: #555;">
-            Bản quyền bởi NKN
-        </div>
-    </div>
-
-    <div class="keyboard-pc">
-        <div class="kb-row" id="row-num"></div>
-        <div class="kb-row" id="row-q" style="margin-left: 15px;"></div>
-        <div class="kb-row" id="row-a" style="margin-left: 30px;"></div>
-    </div>
+    <div class="keyboard-pc" id="kb-display"></div>
 
     <div id="piano-container">
         <div id="piano-keys"></div>
@@ -203,133 +45,94 @@
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const compressor = audioCtx.createDynamicsCompressor();
-    compressor.connect(audioCtx.destination);
-
-    const pianoKeys = document.getElementById('piano-keys');
-    const recBtn = document.getElementById('rec-btn');
-    const menu = document.getElementById('dropdown-menu');
     
-    let currentOctave = 0;
-    let isRecording = false;
-    let recording = [];
-    let startTime = 0;
-
-    // Cấu hình phím và nốt
-    const layouts = {
-        num: ['1','2','3','4','5','6','7','8','9','0'],
-        q: ['Q','W','E','R','T','Y','U','I','O','P'],
-        a: ['A','S','D','F','G','H','J','K','L']
-    };
-
+    // Mở rộng bảng nốt đầy đủ các ký tự đặc biệt
     const notesMap = {
-        '1': 130.81, '2': 146.83, '3': 164.81, '4': 174.61, '5': 196.00, '6': 220.00, '7': 246.94, '8': 261.63, '9': 293.66, '0': 329.63,
-        'Q': 261.63, 'W': 293.66, 'E': 329.63, 'R': 349.23, 'T': 392.00, 'Y': 440.00, 'U': 493.88, 'I': 523.25, 'O': 587.33, 'P': 659.25,
-        'A': 698.46, 'S': 783.99, 'D': 880.00, 'F': 987.77, 'G': 1046.50, 'H': 1174.66, 'J': 1318.51, 'K': 1396.91, 'L': 1567.98
+        '1':130.81,'2':146.83,'3':164.81,'4':174.61,'5':196.00,'6':220.00,'7':246.94,'8':261.63,'9':293.66,'0':329.63,
+        'Q':261.63,'W':293.66,'E':329.63,'R':349.23,'T':392.00,'Y':440.00,'U':493.88,'I':523.25,'O':587.33,'P':659.25,
+        '[':698.46,']':739.99,'\\':783.99,
+        'A':698.46,'S':783.99,'D':880.00,'F':987.77,'G':1046.50,'H':1174.66,'J':1318.51,'K':1396.91,'L':1567.98,
+        ';':1661.22,"'":1760.00,
+        'Z':1046.50,'X':1174.66,'C':1318.51,'V':1396.91,'B':1567.98,'N':1760.00,'M':1975.53,
+        ',':2093.00,'.':2349.32,'/':2637.02
     };
 
-    // Khởi tạo giao diện bàn phím PC
-    Object.keys(layouts).forEach(row => {
-        const container = document.getElementById('row-' + row);
-        layouts[row].forEach(k => {
-            const div = document.createElement('div');
-            div.className = 'key-visual';
-            div.id = 'k-' + k.toLowerCase();
-            div.innerText = k;
-            container.appendChild(div);
-        });
-    });
+    const activeKeys = new Set();
 
-    function playNote(freq, k, isPlayback = false) {
+    function playNote(freq, k) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
-        const f = freq * Math.pow(2, currentOctave);
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-
+        
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(f, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0, audioCtx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
 
         osc.connect(gain);
-        gain.connect(compressor);
+        gain.connect(audioCtx.destination);
+        
         osc.start();
-        osc.stop(audioCtx.currentTime + 1.2);
+        osc.stop(audioCtx.currentTime + 0.8);
 
-        if (isRecording && !isPlayback) {
-            recording.push({f: freq, t: audioCtx.currentTime - startTime});
-        }
-
-        const visual = document.getElementById('k-' + k.toLowerCase());
-        if(visual) {
-            visual.classList.add('active');
-            setTimeout(() => visual.classList.remove('active'), 150);
+        // Highlight nút trên bàn phím ảo
+        const el = document.getElementById('k-' + btoa(k)); // Dùng btoa để xử lý ký tự đặc biệt trong ID
+        if(el) {
+            el.classList.add('active');
+            setTimeout(() => el.classList.remove('active'), 150);
         }
     }
 
-    function renderPiano() {
-        pianoKeys.innerHTML = '';
-        const whiteKeys = ['Q','W','E','R','T','Y','U','I','O','P','A','S','D','F','G','H','J','K','L','Z','X'];
-        const blackPattern = [true, true, false, true, true, true, false];
+    // Vẽ bàn phím PC (Thêm các phím mới)
+    const rows = [
+        ['1','2','3','4','5','6','7','8','9','0'],
+        ['Q','W','E','R','T','Y','U','I','O','P','[',']','\\'],
+        ['A','S','D','F','G','H','J','K','L',';',"'"],
+        ['Z','X','C','V','B','N','M',',','.','/']
+    ];
 
-        // Vẽ phím trắng
-        whiteKeys.forEach((k, i) => {
-            const wk = document.createElement('div');
-            wk.className = 'white-key';
-            wk.onmousedown = () => {
-                const freq = notesMap[k] || 261.63 * Math.pow(1.05946, i);
-                playNote(freq, k);
-            };
-            pianoKeys.appendChild(wk);
+    rows.forEach((row, idx) => {
+        const div = document.createElement('div'); div.className = 'kb-row';
+        if(idx===1) div.style.marginLeft = '10px';
+        if(idx===2) div.style.marginLeft = '25px';
+        if(idx===3) div.style.marginLeft = '40px';
+        row.forEach(k => {
+            const s = document.createElement('div'); s.className='key-visual'; 
+            s.id='k-'+btoa(k); s.innerText=k; 
+            div.appendChild(s);
         });
+        document.getElementById('kb-display').appendChild(div);
+    });
 
-        // Vẽ phím đen (Vị trí chính xác tuyệt đối)
-        let leftPos = 0;
-        for (let i = 0; i < whiteKeys.length - 1; i++) {
-            if (blackPattern[i % 7]) {
-                const bk = document.createElement('div');
-                bk.className = 'black-key';
-                bk.style.left = (40 * (i + 1) - 13) + "px";
-                bk.onmousedown = (e) => {
-                    e.stopPropagation();
-                    const baseFreq = notesMap[whiteKeys[i]] || 261.63;
-                    playNote(baseFreq * 1.05946, 'none');
-                    bk.classList.add('p-active');
-                    setTimeout(() => bk.classList.remove('p-active'), 100);
-                };
-                pianoKeys.appendChild(bk);
-            }
+    // Vẽ Piano (Giữ nguyên logic cũ cho ổn định)
+    const piano = document.getElementById('piano-keys'), wKeys = ['Q','W','E','R','T','Y','U','I','O','P','A','S','D','F','G','H','J','K','L'];
+    const bPat = [true, true, false, true, true, true, false];
+    wKeys.forEach((k, i) => {
+        const wk = document.createElement('div'); wk.className = 'white-key';
+        wk.onmousedown = () => playNote(notesMap[k], k);
+        piano.appendChild(wk);
+        if (bPat[i % 7] && i < wKeys.length - 1) {
+            const bk = document.createElement('div'); bk.className = 'black-key';
+            bk.style.left = (40 * (i + 1) - 13) + "px";
+            bk.onmousedown = (e) => { e.stopPropagation(); playNote(notesMap[k] * 1.05946, 'none'); };
+            piano.appendChild(bk);
         }
-    }
+    });
 
-    // Sự kiện bàn phím
+    // Xử lý phím bấm vật lý
     window.onkeydown = (e) => {
-        if(e.repeat) return;
         const k = e.key.toUpperCase();
-        if(notesMap[k]) playNote(notesMap[k], k);
+        if(notesMap[k] && !activeKeys.has(k)) {
+            activeKeys.add(k);
+            playNote(notesMap[k], k);
+        }
     };
-
-    // Các chức năng phụ
-    window.changeOctave = (v) => { currentOctave = Math.max(-1, Math.min(1, currentOctave + v)); };
-    window.toggleRec = () => {
-        isRecording = !isRecording;
-        recBtn.style.color = isRecording ? "yellow" : "#ff4757";
-        if (isRecording) { recording = []; startTime = audioCtx.currentTime; }
-    };
-    window.playBack = () => {
-        if (!recording.length) return;
-        recording.forEach(n => setTimeout(() => playNote(n.f, 'none', true), n.t * 1000));
-    };
-
-    document.getElementById('menu-btn').onclick = (e) => {
-        e.stopPropagation();
-        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    };
-    window.onclick = () => menu.style.display = 'none';
-
-    renderPiano();
+    window.onkeyup = (e) => activeKeys.delete(e.key.toUpperCase());
+    
+    // Đánh thức âm thanh khi tab quay lại
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') audioCtx.resume(); });
+    window.onclick = () => audioCtx.resume();
 </script>
-
 </body>
 </html>
